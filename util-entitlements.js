@@ -4,7 +4,6 @@
 
 'use strict'
 
-const os = require('os')
 const path = require('path')
 
 const plist = require('plist')
@@ -12,10 +11,9 @@ const plist = require('plist')
 const util = require('./util')
 const debuglog = util.debuglog
 const getAppContentsPath = util.getAppContentsPath
+const getTempFilePath = util.getTempFilePath
 const readFileAsync = util.readFileAsync
 const writeFileAsync = util.writeFileAsync
-
-let tmpFileCounter = 0
 
 /**
  * This function returns a promise completing the entitlements automation: The process includes checking in `Info.plist` for `ElectronTeamID` or setting parsed value from identity, and checking in entitlements file for `com.apple.security.application-groups` or inserting new into array. A temporary entitlements file may be created to replace the input for any changes introduced.
@@ -90,7 +88,7 @@ module.exports.preAutoEntitlements = function (opts) {
             debuglog('`com.apple.security.application-groups` found in entitlements file: ' + appIdentifier)
           }
           // Create temporary entitlements file
-          const entitlementsPath = path.join(os.tmpdir(), `tmp-entitlements-${process.pid.toString(16)}-${(tmpFileCounter++).toString(16)}.plist`)
+          const entitlementsPath = getTempFilePath('entitlements.plist')
           opts.entitlements = entitlementsPath
           return writeFileAsync(entitlementsPath, plist.build(entitlements), 'utf8')
             .then(function () {
